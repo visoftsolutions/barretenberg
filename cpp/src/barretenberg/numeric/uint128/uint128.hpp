@@ -1,6 +1,7 @@
 #pragma once
 #include <iomanip>
 #include <ostream>
+#include <stdint.h>
 
 #ifdef __i386__
 #include "barretenberg/common/serialize.hpp"

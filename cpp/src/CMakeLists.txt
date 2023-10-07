@@ -12,7 +12,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # Specifying `-Wno-${ERROR_NAME}` will silence the error completely.
 # To preserve the warning, but prevent them from causing the build to fail,
 # use the flag `-Wno-error=${ERROR_NAME}`
-add_compile_options(-Werror -Wall -Wextra -Wconversion -Wsign-conversion -Wfatal-errors)
+add_compile_options(-Werror -Wall -Wextra -Wconversion -Wsign-conversion -Wfatal-errors -fPIC)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-fcolor-diagnostics -fconstexpr-steps=100000000)
@@ -83,7 +83,6 @@ message(STATUS "Compiling all-in-one barretenberg archive")
 add_library(
     barretenberg
     STATIC
-    $<TARGET_OBJECTS:dsl_objects>
     $<TARGET_OBJECTS:common_objects>
     $<TARGET_OBJECTS:crypto_aes128_objects>
     $<TARGET_OBJECTS:crypto_blake2s_objects>
@@ -114,6 +113,9 @@ add_library(
     $<TARGET_OBJECTS:stdlib_schnorr_objects>
     $<TARGET_OBJECTS:stdlib_sha256_objects>
     $<TARGET_OBJECTS:transcript_objects>
+    $<TARGET_OBJECTS:dsl_acir_format_objects>
+    $<TARGET_OBJECTS:dsl_acir_proofs_objects>
+    $<TARGET_OBJECTS:env_objects>
 )
 
 if(WASM)

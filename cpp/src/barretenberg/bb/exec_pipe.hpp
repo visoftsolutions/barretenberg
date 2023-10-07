@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iostream>
 #include <vector>
+#include <stdint.h>
 
 inline std::vector<uint8_t> exec_pipe(std::string const& command)
 {

@@ -1,4 +1,4 @@
-#include "c_bind.hpp"
+#include "acir_proofs.hpp"
 #include "../acir_format/acir_to_constraint_buf.hpp"
 #include "acir_composer.hpp"
 #include "barretenberg/common/mem.hpp"
@@ -11,7 +11,9 @@
 #include <cstdint>
 #include <memory>
 
-WASM_EXPORT void acir_get_circuit_sizes(uint8_t const* acir_vec, uint32_t* exact, uint32_t* total, uint32_t* subgroup)
+extern "C" {
+
+__attribute__((visibility("default"))) void acir_get_circuit_sizes(uint8_t const* acir_vec, uint32_t* exact, uint32_t* total, uint32_t* subgroup)
 {
     auto constraint_system = acir_format::circuit_buf_to_acir_format(from_buffer<std::vector<uint8_t>>(acir_vec));
     auto composer = acir_format::create_circuit(constraint_system, 1 << 19);
@@ -20,17 +22,17 @@ WASM_EXPORT void acir_get_circuit_sizes(uint8_t const* acir_vec, uint32_t* exact
     *subgroup = htonl((uint32_t)composer.get_circuit_subgroup_size(composer.get_total_circuit_size()));
 }
 
-WASM_EXPORT void acir_new_acir_composer(uint32_t const* size_hint, out_ptr out)
+__attribute__((visibility("default"))) void acir_new_acir_composer(uint32_t const* size_hint, out_ptr out)
 {
     *out = new acir_proofs::AcirComposer(ntohl(*size_hint));
 }
 
-WASM_EXPORT void acir_delete_acir_composer(in_ptr acir_composer_ptr)
+__attribute__((visibility("default"))) void acir_delete_acir_composer(in_ptr acir_composer_ptr)
 {
     delete reinterpret_cast<acir_proofs::AcirComposer*>(*acir_composer_ptr);
 }
 
-WASM_EXPORT void acir_init_proving_key(in_ptr acir_composer_ptr, uint8_t const* acir_vec)
+__attribute__((visibility("default"))) void acir_init_proving_key(in_ptr acir_composer_ptr, uint8_t const* acir_vec)
 {
     auto acir_composer = reinterpret_cast<acir_proofs::AcirComposer*>(*acir_composer_ptr);
     auto constraint_system = acir_format::circuit_buf_to_acir_format(from_buffer<std::vector<uint8_t>>(acir_vec));
@@ -38,7 +40,7 @@ WASM_EXPORT void acir_init_proving_key(in_ptr acir_composer_ptr, uint8_t const* 
     acir_composer->init_proving_key(barretenberg::srs::get_crs_factory(), constraint_system);
 }
 
-WASM_EXPORT void acir_create_proof(in_ptr acir_composer_ptr,
+__attribute__((visibility("default"))) void acir_create_proof(in_ptr acir_composer_ptr,
                                    uint8_t const* acir_vec,
                                    uint8_t const* witness_vec,
                                    bool const* is_recursive,
@@ -53,20 +55,20 @@ WASM_EXPORT void acir_create_proof(in_ptr acir_composer_ptr,
     *out = to_heap_buffer(proof_data);
 }
 
-WASM_EXPORT void acir_load_verification_key(in_ptr acir_composer_ptr, uint8_t const* vk_buf)
+__attribute__((visibility("default"))) void acir_load_verification_key(in_ptr acir_composer_ptr, uint8_t const* vk_buf)
 {
     auto acir_composer = reinterpret_cast<acir_proofs::AcirComposer*>(*acir_composer_ptr);
     auto vk_data = from_buffer<plonk::verification_key_data>(vk_buf);
     acir_composer->load_verification_key(barretenberg::srs::get_crs_factory(), std::move(vk_data));
 }
 
-WASM_EXPORT void acir_init_verification_key(in_ptr acir_composer_ptr)
+__attribute__((visibility("default"))) void acir_init_verification_key(in_ptr acir_composer_ptr)
 {
     auto acir_composer = reinterpret_cast<acir_proofs::AcirComposer*>(*acir_composer_ptr);
     acir_composer->init_verification_key();
 }
 
-WASM_EXPORT void acir_get_verification_key(in_ptr acir_composer_ptr, uint8_t** out)
+__attribute__((visibility("default"))) void acir_get_verification_key(in_ptr acir_composer_ptr, uint8_t** out)
 {
     auto acir_composer = reinterpret_cast<acir_proofs::AcirComposer*>(*acir_composer_ptr);
     auto vk = acir_composer->init_verification_key();
@@ -74,7 +76,7 @@ WASM_EXPORT void acir_get_verification_key(in_ptr acir_composer_ptr, uint8_t** o
     *out = to_heap_buffer(to_buffer(*vk));
 }
 
-WASM_EXPORT void acir_verify_proof(in_ptr acir_composer_ptr,
+__attribute__((visibility("default"))) void acir_verify_proof(in_ptr acir_composer_ptr,
                                    uint8_t const* proof_buf,
                                    bool const* is_recursive,
                                    bool* result)
@@ -84,14 +86,14 @@ WASM_EXPORT void acir_verify_proof(in_ptr acir_composer_ptr,
     *result = acir_composer->verify_proof(proof, *is_recursive);
 }
 
-WASM_EXPORT void acir_get_solidity_verifier(in_ptr acir_composer_ptr, out_str_buf out)
+__attribute__((visibility("default"))) void acir_get_solidity_verifier(in_ptr acir_composer_ptr, out_str_buf out)
 {
     auto acir_composer = reinterpret_cast<acir_proofs::AcirComposer*>(*acir_composer_ptr);
     auto str = acir_composer->get_solidity_verifier();
     *out = to_heap_buffer(str);
 }
 
-WASM_EXPORT void acir_serialize_proof_into_fields(in_ptr acir_composer_ptr,
+__attribute__((visibility("default"))) void acir_serialize_proof_into_fields(in_ptr acir_composer_ptr,
                                                   uint8_t const* proof_buf,
                                                   uint32_t const* num_inner_public_inputs,
                                                   fr::vec_out_buf out)
@@ -103,7 +105,7 @@ WASM_EXPORT void acir_serialize_proof_into_fields(in_ptr acir_composer_ptr,
     *out = to_heap_buffer(proof_as_fields);
 }
 
-WASM_EXPORT void acir_serialize_verification_key_into_fields(in_ptr acir_composer_ptr,
+__attribute__((visibility("default"))) void acir_serialize_verification_key_into_fields(in_ptr acir_composer_ptr,
                                                              fr::vec_out_buf out_vkey,
                                                              fr::out_buf out_key_hash)
 {
@@ -115,4 +117,5 @@ WASM_EXPORT void acir_serialize_verification_key_into_fields(in_ptr acir_compose
 
     *out_vkey = to_heap_buffer(vkey_as_fields);
     write(out_key_hash, vk_hash);
+}
 }
